@@ -110,7 +110,7 @@ func (cfg *apiConfig) handlerUploadVideo(w http.ResponseWriter, r *http.Request)
 		respondWithError(w, http.StatusInternalServerError, "Error processing video", err)
 		return
 	}
-	// defer os.Remove(processedFilePath)
+	defer os.Remove(processedFilePath)
 
 	processedFile, err := os.Open(processedFilePath)
 	if err != nil {
@@ -184,18 +184,14 @@ func getVideoAspectRatio(filePath string) (string, error) {
 func processVideoForFastStart(inputFilePath string) (string, error) {
 	processedFilePath := fmt.Sprintf("%s.processing", inputFilePath)
 
-	cmd := exec.Command(
-		"ffmpeg", "-fflags", "+genpts",
-		"-i", inputFilePath,
-		"-movflags", "faststart",
-		"-f", "mp4", processedFilePath,
-	)
+	cmd := exec.Command("ffmpeg", "-i", inputFilePath, "-movflags", "faststart", "-c", "copy", "-f", "mp4", processedFilePath)
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
 
 	if err := cmd.Run(); err != nil {
 		return "", fmt.Errorf("error processing video: %s, %v", stderr.String(), err)
 	}
+	fmt.Println("command output stderr:", stderr.String())
 
 	fileInfo, err := os.Stat(processedFilePath)
 	if err != nil {
