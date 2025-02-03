@@ -1,8 +1,6 @@
 package main
 
 import (
-	"crypto/rand"
-	"encoding/base64"
 	"io"
 	"mime"
 	"net/http"
@@ -51,15 +49,8 @@ func (cfg *apiConfig) handlerUploadThumbnail(w http.ResponseWriter, r *http.Requ
 		respondWithError(w, http.StatusBadRequest, "Invalid file type", nil)
 		return
 	}
-	// generates a random file name for each upload
-	randPath := make([]byte, 32)
-	_, err = rand.Read(randPath)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Unable to generate file name", err)
-		return
-	}
-	pathString := base64.RawURLEncoding.EncodeToString(randPath)
-	assetPath := getAssetPath(pathString, mediaType)
+
+	assetPath := getAssetPath(mediaType)
 	assetDiskPath := cfg.getAssetDiskPath(assetPath)
 
 	dst, err := os.Create(assetDiskPath)

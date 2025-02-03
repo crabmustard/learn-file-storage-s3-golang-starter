@@ -9,16 +9,15 @@ import (
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/bootdotdev/learn-file-storage-s3-golang-starter/internal/database"
-
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
 
 type apiConfig struct {
 	db               database.Client
-	s3Client         *s3.Client
 	jwtSecret        string
 	platform         string
+	s3Client         *s3.Client
 	filepathRoot     string
 	assetsRoot       string
 	s3Bucket         string
@@ -26,13 +25,6 @@ type apiConfig struct {
 	s3CfDistribution string
 	port             string
 }
-
-type thumbnail struct {
-	data      []byte
-	mediaType string
-}
-
-// var videoThumbnails = map[uuid.UUID]thumbnail{}
 
 func main() {
 	godotenv.Load(".env")
@@ -87,17 +79,17 @@ func main() {
 		log.Fatal("PORT environment variable is not set")
 	}
 
-	awsConfig, err := config.LoadDefaultConfig(context.Background())
+	awsCfg, err := config.LoadDefaultConfig(context.Background())
 	if err != nil {
 		log.Fatal(err)
 	}
-	awsClient := s3.NewFromConfig(awsConfig)
+	client := s3.NewFromConfig(awsCfg)
 
 	cfg := apiConfig{
 		db:               db,
-		s3Client:         awsClient,
 		jwtSecret:        jwtSecret,
 		platform:         platform,
+		s3Client:         client,
 		filepathRoot:     filepathRoot,
 		assetsRoot:       assetsRoot,
 		s3Bucket:         s3Bucket,
